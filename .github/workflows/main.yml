@@ -1,0 +1,32 @@
+name: Setup RDP with Ngrok
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup-rdp-ngrok:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Install Chocolatey (Windows Package Manager)
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force;
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
+        iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+    - name: Install Ngrok
+      run: |
+        choco install ngrok -y
+
+    - name: Authenticate Ngrok
+      run: |
+        ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+
+    - name: Start Ngrok TCP Tunnel for RDP
+      run: |
+        ngrok tcp 3389
